@@ -13,6 +13,26 @@ app_nodes:    [1,2,3]
 # Min of 3 required and add odd nums only for CNS
 cns_nodes:    [1,2,3]
 
+# If this is set, you can customize some static values for the VM Creation task,
+# make sure to keep the same amount of array items otherwise these definitions
+# will not be applied
+master_nodes_custom_props:
+  - static_ip: 10.70.0.31
+  - static_ip: 10.70.0.32
+  - static_ip: 10.70.0.33
+infra_nodes_custom_props:
+  - static_ip: 10.70.0.35
+  - static_ip: 10.70.0.36
+  - static_ip: 10.70.0.37
+app_nodes_custom_props:
+  - static_ip: 10.70.0.40
+  - static_ip: 10.70.0.41
+  - static_ip: 10.70.0.42
+cns_nodes_custom_props:
+  - static_ip: 10.70.0.40
+  - static_ip: 10.70.0.41
+  - static_ip: 10.70.0.42
+
 #######################
 # vm sizes (adapt)
 # az vm list-sizes -l <region> -o table
@@ -28,6 +48,11 @@ vm_size_infra:  Standard_D8s_v3
 vm_size_node:   Standard_D2s_v3
 vm_size_cns:    Standard_D8s_v3
 vm_size_bastion: Standard_D1
+
+# This can be a pay-as-you-go image ie.
+#   vm_image_id_or_urn: "RedHat:RHEL:7-RAW:latest"
+# or a valid URN like "/subscriptions/abcdef1234-5432-f4k3-id123123123/resourceGroups/ocp-cloud-rhel-image/providers/Microsoft.Compute/images/rhel-server-7.5.1"
+vm_image_id_or_urn: "RedHat:RHEL:7-RAW:latest"
 
 #######################
 # SSH user for all VMs created
@@ -83,6 +108,27 @@ bastion_pkgs:
 #######################
 # Network
 #######################
+
+# If this is true, it won't touch the current customer network configuration,
+# leaving this task to the Azure administrator; Otherwise this playbook run will
+# create, update or delete (as the azure_rm_virtualnetwork module works)
+vnet_customer_managed: true
+vnet_customer_managed_master_subnet: "customer-created-subnet"
+vnet_customer_managed_infra_subnet: "customer-created-subnet"
+vnet_customer_managed_app_subnet: "customer-created-subnet"
+vnet_customer_managed_cns_subnet: "customer-created-subnet"
+
+# If this is set, it will force the dhclient to use it as domain in
+# It will overwrite the domain reddog.ms.com to {{vnet_customer_dns_domain}}
+# at /etc/resolv.conf. Otherwise
+vnet_customer_dns_domain: "dirtrab.cl"
+
+# this must be set if vnet_customer_managed is true, this will be used to
+# determine azure id of managed vnet and subnets (this can be a
+# different resource group)
+vnet_customer_managed_resource_group: 4Network
+
+# vnet_customer_managed: false
 vnet_name: "{{ rg }}vnet"
 vnet_cidr: "192.168.0.0/16"
 master_subnet_cidr: "192.168.0.0/27"
@@ -143,6 +189,23 @@ vnet_preserve: false
 # instead of nip.io. This usually requires router_lb_dns_label to be
 # set, and a wildcard DNS entry to exist for *.app.example.com.
 #router_lb_default_subdomain: app.example.com
+
+# If this is set, Azure creates a DNS record for the public router IP
+# address. The public router IP will change if the environment is
+# deleted and redeployed, but the DNS name will stay the same.
+#
+# This can be referenced in a CNAME record in an external DNS
+# server. The full DNS name is:
+#
+# {{ router_lb_dns_label }}.{{ location }}.cloudapp.azure.com
+#
+#router_lb_dns_label: ocpapplb1
+
+# If this is set, application routes use this domain by default
+# instead of nip.io. This usually requires router_lb_dns_label to be
+# set, and a wildcard DNS entry to exist for *.app.example.com.
+#router_lb_default_subdomain: app.example.com
+
 
 # registry Storage Account Name
 registry_storage_account: "{{ rg | regex_replace('-') }}"

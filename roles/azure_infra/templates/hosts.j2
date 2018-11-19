@@ -18,6 +18,13 @@ openshift_examples_modify_imagestreams=true
 
 {% if deploy_cns | default(true) | bool %}
 
+# CNS Bug https://bugzilla.redhat.com/show_bug.cgi?id=1581622
+openshift_storage_glusterfs_heketi_image=registry.access.redhat.com/rhgs3/rhgs-volmanager-rhel7
+openshift_storage_glusterfs_image=registry.access.redhat.com/rhgs3/rhgs-server-rhel7
+openshift_storage_glusterfs_block_image=registry.access.redhat.com/rhgs3/rhgs-gluster-block-prov-rhel7
+openshift_storage_glusterfs_s3_image=registry.access.redhat.com/rhgs3/rhgs-gluster-s3-server-rhel7#
+
+
 # Gluster Default SC
 openshift_storage_glusterfs_storageclass_default=true
 openshift_storageclass_default=False
@@ -56,6 +63,7 @@ openshift_master_cluster_public_hostname={{ rg }}.{{ location }}.cloudapp.azure.
 
 openshift_master_cluster_hostname={{ master_lb_dns }}
 openshift_master_cluster_public_hostname={{ master_lb_dns }}
+
 {% else %}
 openshift_master_cluster_hostname=ocp-master-1
 openshift_master_cluster_public_hostname={{ master_lb_dns }}
@@ -130,6 +138,7 @@ openshift_logging_es_cluster_size={{ infra_nodes|length }}
 openshift_logging_kibana_nodeselector={"node-role.kubernetes.io/infra": "true"}
 openshift_logging_curator_nodeselector={"node-role.kubernetes.io/infra": "true"}
 openshift_logging_es_nodeselector={"node-role.kubernetes.io/infra": "true"}
+
 {% else %}
 openshift_logging_install_logging=False
 {% endif %}
@@ -297,17 +306,19 @@ ocp-infra-{{ i }} glusterfs_zone={{ i }}  glusterfs_devices='[ "/dev/disk/azure/
 {% endfor %}
 
 [glusterfs]
-{% for i in app_nodes %}
-ocp-app-{{ i }} glusterfs_zone={{ i }} glusterfs_devices='[ "/dev/disk/azure/scsi1/lun2" ]'
+{% if deploy_cns | default(true) | bool %} 
+{% if not deploy_cns_on_infra | default(false) | bool %} 
+{% for i in cns_nodes %}
+ocp-cns-{{ i }}  glusterfs_devices='[ "/dev/disk/azure/scsi1/lun2" ]'
 {% endfor %}
-{% else %}
+{% else %} 
 [glusterfs_registry]
 [glusterfs]
-{% for i in infra_nodes %}
+{% for i in infra_nodes %} 
 ocp-infra-{{ i }}  glusterfs_zone={{ i }} glusterfs_devices='[ "/dev/disk/azure/scsi1/lun2" ]'
-{% endfor %}
-{% endif %}
-{% else %}
+{% endfor %} 
+{% endif %} 
+{% else %} 
 [glusterfs]
 [glusterfs_registry]
-{% endif %}
+{% endif %} 
