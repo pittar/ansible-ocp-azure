@@ -1,7 +1,7 @@
 
 
 # OpenShift on Azure
-This project automates the installation of OpenShift on Azure using ansible.  It follows the [OpenShift + Azure Reference Architecture](https://access.redhat.com/documentation/en-us/reference_architectures/2018/html-single/deploying_and_managing_openshift_3.9_on_azure/) closely. By default the following is deployed, 3 masters, 3 Infra nodes, 3 app nodes, Logging (EFK), Metrics, Prometheus & Grafana. If deploying OpenShift Container Storage (Formerly CNS), this automation will follow best practices and depending on how many app nodes being deployed will create 1 OCS cluster for all storage is less than 3 app nodes and 2 OCS clusters if greater than or equal to 3 app nodes.  SSH access is restricted into the cluster by allowing only the bastion to reach each Node,  ssh is then proxied from the ansible control host via the bastion accesing nodes by hostname.  `ssh ocp-master-1`    To quickly standup an ansible deploy host have a look at [vagrant-rhel](https://github.com/hornjason/vagrant-rhel),  as of now it only supports [virtualbox and libvirt providers](https://app.vagrantup.com/jasonhorn/boxes/rhel7).
+This project automates the installation of OpenShift on Azure using ansible.  It follows the [OpenShift + Azure Reference Architecture](https://access.redhat.com/documentation/en-us/reference_architectures/2018/html-single/deploying_and_managing_openshift_3.11_on_azure/) closely. By default the following is deployed, 3 masters, 3 Infra nodes, 3 app nodes, Logging (EFK), Metrics, Prometheus & Grafana. If deploying OpenShift Container Storage (Formerly CNS), this automation will follow best practices and depending on how many app nodes being deployed will create 1 OCS cluster for all storage is less than 3 app nodes and 2 OCS clusters if greater than or equal to 3 app nodes.  SSH access is restricted into the cluster by allowing only the bastion to reach each Node,  ssh is then proxied from the ansible control host via the bastion accesing nodes by hostname.  `ssh ocp-master-1`    To quickly standup an ansible deploy host have a look at [vagrant-rhel](https://github.com/hornjason/vagrant-rhel),  as of now it only supports [virtualbox and libvirt providers](https://app.vagrantup.com/jasonhorn/boxes/rhel7).
 
 
 ## Topology
@@ -12,12 +12,12 @@ This project automates the installation of OpenShift on Azure using ansible.  It
 The following table outlines the sizes used to better understand the vCpu and Memory quotas needed to successfully deploy OpenShift on Azure.  Verify your current subscription quotas meet the below requirements.
 
 Instance | Hostname | # |VM Size | vCpu's | Memory  
--------- | -------- | - | ------ | ------ | ----- 
+-------- | -------- | - | ------ | ------ | -----
 Master Nodes | ocp-master-# | 3 | Standard_D4s_v3 | 4 | 16  
 Infra Nodes | ocp-infra-# | 3 | Standard_D4s_v3 | 4 | 16   
 App Nodes | ocp-app-# | 3 | Standard_D2S_v3 | 2 | 8  
 Bastion | bastion | 1 | Standard_D1 | 1 | 3.5
-Total | | 13 | | 55 | 219.5Gb 
+Total | | 13 | | 55 | 219.5Gb
 
 
 VM sizes can be configured from defaults by changing the following variables, if the sizes chosen are below minimum OpenShift requirements deployment checks will fail.
@@ -75,7 +75,7 @@ As of now a fix for deployging multiple OCS clusters is only available by clonin
  ```
  6. Copy vars.yml.example to vars.yml
   ```
-  cp vars.yml.example vars.yml 
+  cp vars.yml.example vars.yml
   ```
  7. Fill out required variables below.
  8. Due to bug https://github.com/ansible/ansible/issues/40332 if the ansible control host used to deploy from has LANG set to something other than `en` then you must  `unset LANG`
@@ -90,10 +90,10 @@ Most defaults are specified in `role/azure/defaults/main.yml`,  Sensitive inform
  `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB`
  - **admin_privkey**: - Path to the private ssh key associated with the public key above.  ex. `'~/.ssh/id_rsa`
  - **sp_name**: - Service Principal name created in step 5.
- - **sp_secret**: - Service Principal secret 
+ - **sp_secret**: - Service Principal secret
  - **sp_app_id**: - Service Principal APPID
  - **rhsm_user**: - If subscribing to RHSM using username / password, fill in username
- - **rhsm_pass**: - If subscribing to RHSM using username / password, fill in passowrd for RHSM 
+ - **rhsm_pass**: - If subscribing to RHSM using username / password, fill in passowrd for RHSM
  - **rhsm_key**: -  If subscribing to RHSM using activation key and orgId fill in activation key here.
  - **rhsm_org**: - If subscribing to RHSM using activation key and orgId fill in orgId here.
  - **rhsm_broker_pool**: - If you have a broker pool id for masters / infra nodes fill it in here.  This will be used to for all masters/infra nodes.  If you only have one pool id to use make this the same as `rhsm_node_pool`.
@@ -104,7 +104,7 @@ Number of Nodes
  - **master_nodes**: Defaults to 3 -> [1,2,3]
  - **infra_nodes**:  Defaults to 3 -> [1,2,3]
  - **app_nodes**:    Defaults to 3 -> [1,2,3] add additional nodes here.
- 
+
 Optional Variables:
 
  - **vnet_cidr**: - Can customize as needed, ex `"10.0.0.0/16"`
