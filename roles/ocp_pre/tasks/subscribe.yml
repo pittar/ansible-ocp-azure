@@ -3,26 +3,26 @@
   file:
     path: /etc/yum.repos.d/rh-cloud.repo
     state: absent
-  when: "'nodes' in group_names"
+  when: ('nodes' in group_names) or ('new_nodes' in group_names)
 
 - name: Azure | Remove yum rhui load balancers
   file:
     path: /etc/yum.repos.d/rhui-load-balancers
     state: absent
-  when: "'nodes' in group_names"
+  when: ('nodes' in group_names) or ('new_nodes' in group_names)
 
 - name: Azure | Remove RHEL7 package
   yum:
     name: RHEL7
     state: absent
-  when: "'nodes' in group_names"
+  when: ('nodes' in group_names) or ('new_nodes' in group_names)
 
 - name: Azure | RHSM increase timeout
   lineinfile:
     dest: /etc/rhsm/rhsm.conf
     line: 'server_timeout=600'
     insertafter: '^proxy_password ='
-  when: "'nodes' in group_names"
+  when: ('nodes' in group_names) or ('new_nodes' in group_names)
 
 - name: Azure | RHSM unregister
   redhat_subscription:
@@ -31,7 +31,7 @@
   until: task_result is success
   retries: 10
   delay: 30
-  when: "'nodes' in group_names"
+  when: ('nodes' in group_names) or ('new_nodes' in group_names)
 
 - name: Azure | RHSM register (username-passwd) Master-Infra-CNS
   redhat_subscription:
@@ -67,6 +67,7 @@
     - rhsm_key is defined and rhsm_key != ""
     - rhsm_org is defined and rhsm_org != ""
 
+
 # Commenting this, using "state: absent" as module parameter leavse the machine
 # unsuscribed, therefore it won't be able to enable repos and install packages
 # - name: remove premium pool id | Master and Infra subscription only
@@ -78,6 +79,7 @@
 #       ( inventory_hostname in groups.infra )   or
 #       ( inventory_hostname in groups.glusterfs )
 #     - ( rhsm_broker_pool is defined and rhsm_broker_pool != "" ) and (rhsm_node_pool == rhsm_broker_pool)
+
 
 - name: Azure | RHSM register (username-passwd) Application nodes
   redhat_subscription:
@@ -123,7 +125,7 @@
   until: repo_result is success
   retries: 10
   delay: 30
-  when: "'nodes' in group_names"
+  when: ('nodes' in group_names) or ('new_nodes' in group_names)
 
 - name: Azure | RHSM enable repos for OCP
   rhsm_repository:
@@ -134,7 +136,7 @@
   retries: 10
   delay: 30
   register: repo_result
-  when: "'nodes' in group_names"
+  when: ('nodes' in group_names) or ('new_nodes' in group_names)
 
 - name: Azure | Install OCP client
   yum:

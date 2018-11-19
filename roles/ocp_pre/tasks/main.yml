@@ -1,4 +1,5 @@
 ---
+
 - block:
   - name: Azure | override search server at dhcp conf
     blockinfile:
@@ -46,13 +47,10 @@
         register: result
         until: result.status == 200
         retries: 60
-        delay: 1
+        delay: 10
   delegate_to: localhost
   run_once: true
   become: true
-
-- name: Azure | Import cloudprovider.yml
-  include_tasks: cloudprovider.yml
 
 - name: Azure | Import subscribe.yml
   include_tasks: subscribe.yml
