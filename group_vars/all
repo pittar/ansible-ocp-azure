@@ -1,17 +1,9 @@
 ---
-# defaults file for azure_infra
+# defaults file for ocp_on_azure
+
 state: present
 location: eastus
-rg: "test"
-
-#######################
-# nodes
-#######################
-master_nodes: [1,2,3]
-infra_nodes:  [1,2,3]
-app_nodes:    [1,2,3]
-# Min of 3 required and add odd nums only for CNS
-cns_nodes:    [1,2,3]
+rg: "test-env"
 
 #######################
 # vm sizes (adapt)
@@ -24,17 +16,20 @@ cns_nodes:    [1,2,3]
 #vm_size_cns:    Standard_E4_v3
 
 vm_size_master: Standard_D4s_v3
-vm_size_infra:  Standard_D8s_v3
-vm_size_node:   Standard_D2s_v3
-vm_size_cns:    Standard_D8s_v3
+vm_size_infra:  Standard_E4s_v3
+vm_size_node:   Standard_E4s_v3
+vm_size_cns:    Standard_E4s_v3
 vm_size_bastion: Standard_D1
 
 #######################
-# SSH user for all VMs created
+# SSH Info
 #######################
+# SSH user for all VM's created
 admin_user: cloud-user
-# This will be added to each instance's authorized_keys file
-admin_pubkey: 'ssh-rsa LDKJFDLKJDFLDKJDF'
+
+# Add Your Public Key. This will be added to each instance's authorized_keys file
+admin_pubkey: ''
+
 # Path for the private key which will be added to localhost ssh_config for proxying through the bastion
 admin_privkey: '~/.ssh/id_rsa'
 
@@ -42,31 +37,57 @@ admin_privkey: '~/.ssh/id_rsa'
 #bastion_users:
 #  user1: 'ssh-rsa LDKJFDLKJDFLDKJDF'
 #  user2: 'ssh-rsa FDLKJDFLDKJDFLDKJ'
+bastion_users: {}
 
 #######################
 # Service Principal
 #######################
+#
+# To create SP:
+#  az ad sp create-for-rbac --name css-azure-admin
+#
+# Example output format:
+# Retrying role assignment creation: 1/36
+# {
+#  'appId': '-------------------------------------',
+#  'displayName': 'css-azure-admin',
+#  'name': 'http://css-azure-admin',
+#  'password': '**********************************',
+#  'tenant': '-------------------------------------'
+# }
+#
+# Note: After creating the sp, ensure the user is provided with 'Read directory data' permissions
+
+# Service principal name.
 # This is used to template the cloud config file on each node for azure
-sp_name: devops
+sp_name: "css-azure-admin"
+
+# Service principal password.
 # Place this in vars file that can be encrypted in root of play and not checked into SCM
-sp_secret: 'password'
-#sp_app_id: 'dfdffdfa0103'
+sp_secret: ""
+
+# Service principal App ID
+sp_app_id: ""
 
 #######################
 # RHSM
 # Username / Password or
 # Activation key / OrgId
 #######################
-rhsm_user: ''
-rhsm_pass: ''
+rhsm_user: ""
+rhsm_pass: ""
+
 rhsm_key: ""
 rhsm_org: ""
+
 # Can specify separate pools so only Application nodes use paid subs
 # or keep the same if only using one pool
 rhsm_broker_pool: ""
 rhsm_node_pool: ""
+
 # For openshift contakiner Storage
 rhsm_ocs_pool: ""
+
 rhsm_repos:
   - rhel-7-server-rpms
   - rhel-7-server-extras-rpms
@@ -75,6 +96,7 @@ rhsm_repos:
   - rhel-7-server-ansible-2.4-rpms
 bastion_pkgs:
   - ansible
+  - openshift-ansible
   - atomic-openshift-clients
   - git
   - tmux
@@ -144,6 +166,12 @@ vnet_preserve: false
 # set, and a wildcard DNS entry to exist for *.app.example.com.
 #router_lb_default_subdomain: app.example.com
 
+# Name of Master LB
+master_lb_public_ip: "masterExternalLB"
+
+# Name of Router LB
+router_lb_public_ip: "routerExternalLB"
+
 # registry Storage Account Name
 registry_storage_account: "{{ rg | regex_replace('-') }}"
 
@@ -186,6 +214,7 @@ openshift_master_identity_providers: [{'name': 'htpasswd_auth', 'login': 'true',
 # deploy CNS
 #######################
 deploy_cns: true
+deploy_cns_on_infra: true
 deploy_metrics: true
 deploy_logging: true
 deploy_prometheus: true
@@ -201,8 +230,8 @@ prometheus_volume_size: 25
 # infra usable storage needs to be greater than below calculations
 # logging_volume_size * ec2_count_infra) + metrics_volume_size + prometheus_volume_size) * 1.3  + registry_volume_size (if using OCS for registry)
 ocs_infra_cluster_allocated_storage: "{{ ((( logging_volume_size|int * infra_nodes|length|int ) + metrics_volume_size|int  + prometheus_volume_size|int ) * 1.3  ) | round | int }}"
-ocs_infra_cluster_usable_storage: 512
-ocs_app_cluster_usable_storage: 100
+ocs_infra_cluster_usable_storage: 1024
+ocs_app_cluster_usable_storage: 200
 #######################
 # UI customization
 #######################
@@ -215,4 +244,19 @@ ocs_app_cluster_usable_storage: 100
 #######################
 #######################
 bastion: "{{ rg }}b.{{ location }}.cloudapp.azure.com"
-deploy_cns_on_infra: true
+
+############################
+# Initial Cluster
+############################
+master_nodes: [1,2,3]
+infra_nodes: [1,2,3]
+app_nodes: [1,2,3]
+# Min of 3 required and add odd nums only for CNS
+cns_nodes: [1,2,3]
+
+############################
+# Scale Info
+############################
+new_master_nodes: []
+new_infra_nodes: []
+new_app_nodes: []
