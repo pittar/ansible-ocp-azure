@@ -1,4 +1,30 @@
 ---
+# availablity Sets
+- name: Azure | Manage Availability Sets
+  azure_rm_availabilityset:
+    name: "{{ item }}"
+    state: "{{ state }}"
+    location: "{{ location }}"
+    resource_group: "{{ rg }}"
+    platform_fault_domain_count: 2
+    sku: Aligned
+  loop:
+    - "ocp-master-instances"
+    - "ocp-infra-instances"
+    - "ocp-app-instances"
+
+# availablity Set for CNS Only
+- name: Azure | Manage CNS Availability Set
+  azure_rm_availabilityset:
+    name: ocp-cns-instances
+    state: "{{ state }}"
+    location: "{{ location }}"
+    resource_group: "{{ rg }}"
+    platform_fault_domain_count: 2
+    sku: Aligned
+  when:
+    - deploy_cns | default(true) | bool
+    - not deploy_cns_on_infra | default(false) | bool
 # Create VMs
 #
 # We use the CLI option "--no-wait" to create all VMs in parallel, and

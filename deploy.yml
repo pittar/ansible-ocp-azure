@@ -1,5 +1,14 @@
 ---
 - hosts: localhost
+  tasks:
+    - name: Setup | update required packages
+      yum:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - openshift-ansible
+
+- hosts: localhost
   roles:
     - role: azure_infra
       tags: infra

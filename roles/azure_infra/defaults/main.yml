@@ -44,7 +44,7 @@ rhsm_repos:
   - rhel-7-server-ansible-2.4-rpms
 bastion_pkgs:
   - ansible
-  - atomic-openshift-utils
+  - openshift-ansible
   - atomic-openshift-clients
   - git
   - tmux

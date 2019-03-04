@@ -174,7 +174,7 @@ openshift_logging_install_logging=False
 ###=============================================================================
 ## METRICS
 #
-{% if deploy_logging | default('True') | bool %}
+{% if deploy_metrics | default('True') | bool %}
 openshift_metrics_install_metrics=True
 openshift_metrics_storage_kind=dynamic
 openshift_metrics_storage_volume_size={{ metrics_volume_size }}Gi
@@ -325,6 +325,15 @@ openshift_hosted_registry_storage_azure_blob_accountname={{ registry_storage_acc
 openshift_hosted_registry_storage_azure_blob_accountkey={{ registry_storage_account_key }}
 openshift_hosted_registry_storage_azure_blob_container=registry
 openshift_hosted_registry_storage_azure_blob_realm=core.windows.net
+
+{% if registry_cert is defined %}
+####################
+## custom certs
+## Registry
+#####################
+openshift_hosted_registry_routecertificates={{ registry_cert }}
+openshift_hosted_registry_routetermination=reencrypt
+{% endif %}
 
 [masters]
 {% for i in master_nodes %}
