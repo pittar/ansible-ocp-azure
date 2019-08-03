@@ -39,7 +39,9 @@ az vm list-usage --location westus --output table
 ## Pre-Reqs
 
 Reqs
-A few Pre-Reqs need to be met and are documented in the Reference Architecture already.  **Ansible 2.6 is required**, the ansible control host running the deployment needs to be registered and subscribed to `rhel-7-server-ansible-2.6-rpms`.  Creating a [Service Principal](https://access.redhat.com/documentation/en-us/reference_architectures/2018/html-single/deploying_and_managing_openshift_3.9_on_azure/#service_principal) is documented as well as setting up the Azure CLI.  Currently the Azure CLI is setup on the ansible control host running the deployment using the playbook `azure_cli.yml` or by following instructions here, [Azure CLI Setup](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?toc=%2Fazure%2Fazure-resource-manager%2Ftoc.json&view=azure-cli-latest).
+A few Pre-Reqs need to be met and are documented in the Reference Architecture already.  **Ansible 2.6 is required**, the ansible control host running the deployment needs to be registered and subscribed to `rhel-7-server-ansible-2.6-rpms`.  The easiest way to satisfy this is to simply create a RHEL 7.6 VM on Azure as your Ansible control host (#1 below).
+
+Creating a [Service Principal](https://access.redhat.com/documentation/en-us/reference_architectures/2018/html-single/deploying_and_managing_openshift_3.9_on_azure/#service_principal) is documented as well as setting up the Azure CLI.  Currently the Azure CLI is setup on the ansible control host running the deployment using the playbook `azure_cli.yml` or by following instructions here, [Azure CLI Setup](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?toc=%2Fazure%2Fazure-resource-manager%2Ftoc.json&view=azure-cli-latest).
 
  1. Ansible control host setup:
     Register the ansible control host used for this deployment with valid RedHat subscription thats able to pull down ansible 2.6 or manually install ansible 2.6 along with atomic-openshift-utils.  To quickly create a VM using Vagrant try out [vagrant-rhel](https://github.com/hornjason/vagrant-rhel).
@@ -108,8 +110,8 @@ Number of Nodes
 
 Optional Variables:
 
- - **vnet_cidr**: - Can customize as needed, ex `"10.0.0.0/16"`
-By Default the HTPasswdPasswordIdentityProvider is used but can be customized,  this will be templated out to the ansible hosts file.  By default htpasswd user is added.
+- **vnet_cidr**: - Can customize as needed, ex `"10.0.0.0/16"`
+- By Default the HTPasswdPasswordIdentityProvider is used but can be customized,  this will be templated out to the ansible hosts file.  By default htpasswd user is added.
 - **openshift_master_htpasswd_users**: - Contains the user: < passwd hash generated from htpasswd -n user >
 - **deploy_cns**: true
 - **deploy_cns_to_infra**: true  - This should always be 'True' if depoy_cns is 'True', no longer create separate CNS nodes
