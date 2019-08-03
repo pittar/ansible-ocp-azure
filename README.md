@@ -61,7 +61,7 @@ Creating a [Service Principal](https://access.redhat.com/documentation/en-us/ref
  2. Clone this repository
 
  ```
- git clone https://github.com/xxxx/ansible-ocp-azure.git; cd ansible-ocp-azure
+ git clone https://github.com/pittar/ansible-ocp-azure.git; cd ansible-ocp-azure
  git checkout v3.11
  ```
  3.  Install Azure CLI,  using playbook included or manually following above directions.
