@@ -1,0 +1,293 @@
+---
+# defaults file for azure_infra
+state: present
+location: eastus
+rg: "ocpdemo-rg"
+rg_label: "ocpdemo-rg"
+
+#######################
+# nodes
+#######################
+master_nodes: [1,2,3]
+infra_nodes:  [1,2,3]
+app_nodes:    [1,2,3]
+# Min of 3 required and add odd nums only for CNS
+cns_nodes:    [1,2,3]
+
+#######################
+# Smaller deployment option for testing.
+#######################
+# master_nodes: [1]
+# infra_nodes:  [1]
+# app_nodes:    [1,2,3]
+# cns_nodes:    [1,2,3]
+
+# If this is set, you can customize some static values for the VM Creation task,
+# make sure to keep the same amount of array items otherwise these definitions
+# will not be applied
+master_nodes_custom_props:
+  - static_ip: 10.70.0.31
+  - static_ip: 10.70.0.32
+  - static_ip: 10.70.0.33
+infra_nodes_custom_props:
+  - static_ip: 10.70.0.35
+  - static_ip: 10.70.0.36
+  - static_ip: 10.70.0.37
+app_nodes_custom_props:
+  - static_ip: 10.70.0.40
+  - static_ip: 10.70.0.41
+  - static_ip: 10.70.0.42
+cns_nodes_custom_props:
+  - static_ip: 10.70.0.40
+  - static_ip: 10.70.0.41
+  - static_ip: 10.70.0.42
+
+#######################
+# vm sizes (adapt)
+# az vm list-sizes -l <region> -o table
+#######################
+# For a cheaper solution when testing
+#vm_size_master: Standard_E2_v3
+#vm_size_infra:  Standard_E4_v3
+#vm_size_node:   Standard_E2_v3
+#vm_size_cns:    Standard_E4_v3
+
+vm_size_master: Standard_D4s_v3
+vm_size_infra:  Standard_D8s_v3
+vm_size_node:   Standard_D2s_v3
+vm_size_cns:    Standard_D8s_v3
+vm_size_bastion: Standard_D1
+
+# This can be a pay-as-you-go image ie.
+#   vm_image_id_or_urn: "RedHat:RHEL:7-RAW:latest"
+# or a valid URN like "/subscriptions/abcdef1234-5432-f4k3-id123123123/resourceGroups/ocp-cloud-rhel-image/providers/Microsoft.Compute/images/rhel-server-7.5.1"
+vm_image_id_or_urn: "RedHat:RHEL:7-RAW:latest"
+
+#######################
+# SSH user for all VMs created
+#######################
+admin_user: cloud-user
+# This will be added to each instance's authorized_keys file
+# ssh-keygen -t rsa
+# /ansibe-ocp-azure/id_rsa_azure
+admin_pubkey: 'ssh-rsa AAAAB3NzaC1y...'
+# Path for the private key which will be added to localhost ssh_config for proxying through the bastion
+admin_privkey: 'id_rsa_azure'
+
+# If set, creates local users with password-less sudo on the bastion.
+#bastion_users:
+#  user1: 'ssh-rsa LDKJFDLKJDFLDKJDF'
+#  user2: 'ssh-rsa FDLKJDFLDKJDFLDKJ'
+
+#######################
+# Service Principal
+#######################
+# This is used to template the cloud config file on each node for azure
+sp_name: SPName
+# Place this in vars file that can be encrypted in root of play and not checked into SCM
+sp_secret: 'sp-password'
+sp_app_id: 'sp-app-id'
+
+#######################
+# RHSM
+# Username / Password or
+# Activation key / OrgId
+#######################
+rhsm_user: 'username'
+rhsm_pass: 'password'
+registry_service_account_user: 'xxx|yyy'
+registry_service_account_token: 'biglongtoken'
+#rhsm_key: ""
+#rhsm_org: ""
+# Can specify separate pools so only Application nodes use paid subs
+# or keep the same if only using one pool
+rhsm_broker_pool: ""
+rhsm_node_pool: ""
+# For openshift contakiner Storage
+rhsm_ocs_pool: ""
+rhsm_repos:
+  - rhel-7-server-rpms
+  - rhel-7-server-extras-rpms
+  - rhel-7-server-ose-3.11-rpms
+  - rhel-7-server-ansible-2.6-rpms
+bastion_pkgs:
+  - ansible
+  - atomic-openshift-clients
+  - git
+  - tmux
+  - screen
+
+#######################
+# Network
+#######################
+
+# If this is true, it won't touch the current customer network configuration,
+# leaving this task to the Azure administrator; Otherwise this playbook run will
+# create, update or delete (as the azure_rm_virtualnetwork module works)
+# vnet_customer_managed: true
+# vnet_customer_managed_master_subnet: "customer-created-subnet"
+# vnet_customer_managed_infra_subnet: "customer-created-subnet"
+# vnet_customer_managed_app_subnet: "customer-created-subnet"
+# vnet_customer_managed_cns_subnet: "customer-created-subnet"
+
+# If this is set, it will force the dhclient to use it as domain in
+# It will overwrite the domain reddog.ms.com to {{vnet_customer_dns_domain}}
+# at /etc/resolv.conf. Otherwise
+# vnet_customer_dns_domain: ""
+
+# this must be set if vnet_customer_managed is true, this will be used to
+# determine azure id of managed vnet and subnets (this can be a
+# different resource group)
+# vnet_customer_managed_resource_group:
+
+vnet_customer_managed: false
+vnet_name: "{{ rg }}vnet"
+vnet_cidr: "192.168.0.0/16"
+master_subnet_cidr: "192.168.0.0/27"
+infra_subnet_cidr: "192.168.0.32/27"
+cns_subnet_cidr: "192.168.0.64/27"
+app_subnet_cidr: "192.168.0.128/27"
+
+api_port: 443
+
+# If this is set, the bastion host is configured with the given static
+# IP address. A public IP address is still assigned to the bastion
+# because it is required during installation, but can be removed in
+# Azure after the installation is done. This is useful in environments
+# where the VNet is accessible from a private network.
+#bastion_private_ip: 192.168.0.20
+
+# Override the defaults for the SDN cluster network and the services
+# network.
+#osm_cluster_network_cidr: 10.29.0.0/16
+#openshift_portal_net: 10.28.0.0/16
+
+# If this is set to true, the VNet in the given resource group is not
+# deleted by the destroy.yml playbook. This can be used in
+# environments where a peering agreement or Express Route exists for
+# the given resource group, that was configured before the OpenShift
+# installation.
+vnet_preserve: false
+
+#######################
+# LB
+#######################
+# DNS name for the master load balancer. If not set,
+# {{ rg }}.{{ location }}.cloudapp.azure.com will be used.
+#master_lb_dns: ""
+
+# If this is set, the master load balancer will be configured as an
+# internal Azure load balancer with the given IP address as its
+# frontend IP address. There will be no public IP address assigned to
+# the load balancer. This is useful in environments where the VNet is
+# accessible from a private network.
+#
+# If this is set, the master_lb_dns parameter also needs to be defined
+# and point to this IP address in DNS.
+#master_lb_private_ip: 192.168.0.21
+
+# If this is set, Azure creates a DNS record for the public router IP
+# address. The public router IP will change if the environment is
+# deleted and redeployed, but the DNS name will stay the same.
+#
+# This can be referenced in a CNAME record in an external DNS
+# server. The full DNS name is:
+#
+# {{ router_lb_dns_label }}.{{ location }}.cloudapp.azure.com
+#
+router_lb_dns_label: "{{rg_label}}applb1"
+
+# If this is set, application routes use this domain by default
+# instead of nip.io. This usually requires router_lb_dns_label to be
+# set, and a wildcard DNS entry to exist for *.app.example.com.
+#router_lb_default_subdomain: 
+
+# If this is set, Azure creates a DNS record for the public router IP
+# address. The public router IP will change if the environment is
+# deleted and redeployed, but the DNS name will stay the same.
+#
+# This can be referenced in a CNAME record in an external DNS
+# server. The full DNS name is:
+#
+# {{ router_lb_dns_label }}.{{ location }}.cloudapp.azure.com
+#
+#router_lb_dns_label: ocpapplb1
+
+# If this is set, application routes use this domain by default
+# instead of nip.io. This usually requires router_lb_dns_label to be
+# set, and a wildcard DNS entry to exist for *.app.example.com.
+#router_lb_default_subdomain: app.example.com
+
+
+# registry Storage Account Name
+registry_storage_account: "{{ rg | regex_replace('-') }}"
+
+
+###########################
+# DNS
+###########################
+
+# Optional dictionary of DNS domains and nameservers to configure on
+# the bastion and each node. DNS lookups for the given domains will be
+# done against the given nameservers. This can be used in environments
+# where a peering agreement or Express Route exists for the given
+# resource group
+#
+#dns_domain_nameservers:
+#  internal.example.com: 192.168.100.1
+
+
+#######################
+# Custom Named Certs
+#######################
+# Router
+#router_cert: '{"cafile": "/path/to/ca_cert", "certfile": "/path/to/fullchain.cer", "keyfile": "/vagrant/keys/domain.key"}'
+## Master
+#master_cert: '[{"cafile": "/path/to/ca_cert", "certfile": "/path/to/fullchain.cer", "keyfile": "/path/to/key/domain.key", "names": ["openshift.console.domain.name"]}]'
+
+
+#######################
+# OCP Identity
+# Use 'htpasswd -n <user>' to generate password hash. (htpasswd from httpd-tools RPM)
+#######################
+# Example with admin:changeme
+openshift_master_htpasswd_users: {'admin': '$apr1$zAhyA9Ko$rBxBOwAwwtRuuaw8OtCwH0'}
+openshift_master_identity_providers: [{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
+
+#
+#ocp_admin_passwd: 'redhat'
+
+#######################
+# deploy CNS
+#######################
+deploy_cns: false
+deploy_metrics: true
+deploy_logging: true
+deploy_prometheus: true
+deploy_grafana: true
+
+# volume sizing defaults
+metrics_volume_size: 25
+logging_volume_size: 100
+prometheus_volume_size: 25
+
+# OpenShift Container StorageClass
+# Sizes in Gi
+# infra usable storage needs to be greater than below calculations
+# logging_volume_size * ec2_count_infra) + metrics_volume_size + prometheus_volume_size) * 1.3  + registry_volume_size (if using OCS for registry)
+ocs_infra_cluster_allocated_storage: "{{ ((( logging_volume_size|int * infra_nodes|length|int ) + metrics_volume_size|int  + prometheus_volume_size|int ) * 1.3  ) | round | int }}"
+ocs_infra_cluster_usable_storage: 512
+ocs_app_cluster_usable_storage: 100
+#######################
+# UI customization
+#######################
+
+#project_request_message: To create a new project, contact your team administrator.
+
+#######################
+#######################
+# Don't change
+#######################
+#######################
+bastion: "{{ rg }}b.{{ location }}.cloudapp.azure.com"
+deploy_cns_on_infra: true
