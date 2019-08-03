@@ -129,3 +129,16 @@ The ansible control host running the deployment will be setup to use ssh proxy t
 
 ## Destroy
 `ansible-playbook destroy.yml -e@vars.yml`
+
+## Adding users with htpasswd.
+
+If using htpasswd for user management (default for this playbook), add a user as follows:
+
+1) From the bastion, ssh into the first master: `$ ssh cloud-user@ocp-master-1`
+2) Add a user: `$ sudo htpasswd -b /etc/origin/master/htpasswd newuser newuserpassword`
+If you have more than 1 master...
+3) Copy the new entry from the htpasswd file: `$ sudo cat /etc/origin/master/htpasswd`
+4) Exit ssh session: `$ exit`
+5) SSH into the next master like in step 1 and add the entry to the htpasswd files: `$ sudo vi /etc/origin/master/htpasswd`
+6) Add the use entry, then exit and save.
+7) Repeat steps 4-6 for each master.
