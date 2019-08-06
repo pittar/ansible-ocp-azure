@@ -87,6 +87,8 @@ sp_app_id: 'dfdffdfa0103'
 #######################
 rhsm_user: 'user'
 rhsm_pass: 'pass'
+registry_service_account_user: 'xxx|yyy'
+registry_service_account_token: 'biglongtoken'
 rhsm_key: ""
 rhsm_org: ""
 # Can specify separate pools so only Application nodes use paid subs
