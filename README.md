@@ -15,9 +15,9 @@ Instance | Hostname | # |VM Size | vCpu's | Memory
 -------- | -------- | - | ------ | ------ | -----
 Master Nodes | ocp-master-# | 3 | Standard_D4s_v3 | 4 | 16
 Infra Nodes | ocp-infra-# | 3 | Standard_D4s_v3 | 4 | 16
-App Nodes | ocp-app-# | 3 | Standard_D2S_v3 | 2 | 8
+App Nodes | ocp-app-# | 3 | Standard_D4s_v3 | 4 | 16
 Bastion | bastion | 1 | Standard_D1 | 1 | 3.5
-Total | | 13 | | 55 | 219.5Gb
+Total | | 10 | | 37 | 147.5Gb
 
 
 VM sizes can be configured from defaults by changing the following variables, if the sizes chosen are below minimum OpenShift requirements deployment checks will fail.
@@ -27,7 +27,7 @@ VM sizes can be configured from defaults by changing the following variables, if
 | -- | ---- |
 | vm_size_master: | Standard_D4s_v3
 | vm_size_infra: | Standard_D4s_v3
-| vm_size_node:  | Standard_D2s_v3
+| vm_size_node:  | Standard_D4s_v3
 | vm_size_bastion: | Standard_D1
 
 
