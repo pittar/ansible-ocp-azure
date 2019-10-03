@@ -48,7 +48,7 @@ Creating a [Service Principal](https://access.redhat.com/documentation/en-us/ref
     sudo subscription-manager register --username < username > --password < password >
     sudo subscription-manager attach --pool < pool_id >
     sudo subscription-manager repos --disable=*
-    subscription-manager repos \
+    sudo subscription-manager repos \
         --enable="rhel-7-server-rpms" \
         --enable="rhel-7-server-extras-rpms" \
         --enable="rhel-7-server-ose-3.11-rpms" \
