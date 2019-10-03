@@ -71,7 +71,7 @@ Creating a [Service Principal](https://access.redhat.com/documentation/en-us/ref
  4. Authenticate with Azure,  `az login`  described here, [Azure Authentication](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli?view=azure-cli-latest).
  5. Create a Service Principal outlined here, [Creating SP](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?toc=%2Fazure%2Fazure-resource-manager%2Ftoc.json&view=azure-cli-latest). and [3.9 Reference Architecture](https://access.redhat.com/documentation/en-us/reference_architectures/2018/html-single/deploying_and_managing_openshift_3.9_on_azure/#service_principal)
  ```
- az ad sp create-for-rbac --name ServicePrincipalName --password PASSWORD
+ az ad sp create-for-rbac --name ServicePrincipalName
  ```
  6. Copy vars.yml.example to vars.yml
   ```
