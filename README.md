@@ -79,12 +79,15 @@ As of now a fix for deployging multiple OCS clusters is only available by clonin
   ```
  7. Fill out required variables below.
  8. Due to bug https://github.com/ansible/ansible/issues/40332 if the ansible control host used to deploy from has LANG set to something other than `en` then you must  `unset LANG`
+ 
+ **Note:** Make sure you are signed in with the az cli to the correct subscription.
 
 ## Required Variables
 Most defaults are specified in `role/azure/defaults/main.yml`,  Sensitive information is left out and should be entered in `vars.yml`.  Below are required variables that should be filled in before deploying.
 
  - **location**:  - Azure location for deployment ex. `eastus`
  - **rg**:  - Azure Resource Group ex. `test-rg`
+ - **rg_label**: - This should be lower case with no special characters (- is fine)
  - **admin_user**: - SSH user that will be created on each VM ex. `cloud-user`
  - **admin_pubkey**: - Copy paste the Public SSH key that will be added to authorized_keys on each VM ex.
  `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB`
